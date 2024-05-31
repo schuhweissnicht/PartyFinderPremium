@@ -1,5 +1,5 @@
 # PartyFinderPremium
-#### Add the "PartyFinderPremium" Folder (not the .zip) to: ...\AppData\Roaming\.minecraft\config\ChatTriggers\modules",
+#### Add the "PartyFinderPremium" Folder (not the .zip) to: ...\AppData\Roaming\ .minecraft\config\ChatTriggers\modules",
 #### Run "/ct load" ingame.
 ### This Module is Designed for Chattrigers 2.2.0
 #### Module on Chattrigers: [www.chattriggers.com/modules/PartyFinderPremium](https://www.chattriggers.com/modules/v/PartyFinderPremium) (GitHub receives updates faster because Chattriger staff first reviewing the files before the release will get published)
