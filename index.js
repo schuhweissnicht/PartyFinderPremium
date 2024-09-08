@@ -13,6 +13,12 @@ const Pog = new PogObject('PartyFinderPremium', {
   reasons: [],
 });
 
+register('tick', () => {
+  if (!Settings.bottomline) return;
+
+  Scoreboard.setLine(1, `§3Ugy Dungeon Rat!`, true)
+})
+
 register("chat", (event) => {
   if (!Settings.throwerkick) return;
 
@@ -40,7 +46,8 @@ register("chat", (event) => {
         ChatLib.chat(`${Settings.PREFIX} &c<!> &eUser &c&l${user} &eis on your thrower list! Reason: ${reason}`);
         if (Settings.kickReason) {
           setTimeout(() => {
-            ChatLib.command(`pc ${user} is on my thrower list! Reason: ${reason}`);
+            ThrowerMessage = Settings.THROWERMSG.replace("{user}", user);
+            ChatLib.command(`pc ${ThrowerMessage} Reason: ${reason}`);
           }, 150);
         }
         setTimeout(() => {
@@ -50,7 +57,8 @@ register("chat", (event) => {
         ChatLib.chat(`${Settings.PREFIX} &c<!> &eThis user is playing the &c&l${userClass} &eclass, which you have not allowed to join your party.`);
         if (Settings.kickReason) {
           setTimeout(() => {
-            ChatLib.command(`pc ${user} no ${userClass}!`);
+            ClassKickMessage = Settings.CLASSKICKMSG.replace("{class}", userClass).replace("{user}", user);
+            ChatLib.command(`pc ${ClassKickMessage}`);
           }, 150);
         }
         setTimeout(() => {
@@ -68,7 +76,16 @@ register("chat", (event) => {
 register("command", (arg1, arg2, ...args) => {
   if (!arg1) {
     Settings.openGUI();
-  } else if (arg1.toLowerCase() == "add") {
+  } else if (arg1.toLowerCase() === "help") {
+    ChatLib.chat("&9&m-----------------------------------------------------");
+    ChatLib.chat("&3Usage of /pfp:");
+    ChatLib.chat("&3/pfp &7- Opens the Config");
+    ChatLib.chat("&3/pfp add <name> [reason] &7- Adds a user to the thrower list with an optional reason");
+    ChatLib.chat("&3/pfp list &7- Shows the full thrower list");
+    ChatLib.chat("&3/pfp remove <name> &7- Removes a user from the thrower list");
+    ChatLib.chat("&3/pfp check <name> &7- Checks if a user is on the thrower list");
+    ChatLib.chat("&9&m-----------------------------------------------------");
+  } else if (arg1.toLowerCase() === "add") {
     if (arg2) {
       let reason = args && args.length > 0 ? args.join(" ") : "No reason specified";
       ChatLib.chat(`${Settings.PREFIX} &eWorking...`);
@@ -100,11 +117,11 @@ register("command", (arg1, arg2, ...args) => {
     } else {
       ChatLib.chat(`${Settings.PREFIX} &cPlease provide a username to add to the thrower list.`);
     }
-  } else if (arg1.toLowerCase() == "list") {
+  } else if (arg1.toLowerCase() === "list") {
     ChatLib.chat("&9&m-----------------------------------------------------");
     ChatLib.chat("&r" + Pog.throwernames.map((name, index) => `&3${name} &7(Reason: ${Pog.reasons[index]})`).join("\n&r"));
     ChatLib.chat("&9&m-----------------------------------------------------");
-  } else if (arg1.toLowerCase() == "remove") {
+  } else if (arg1.toLowerCase() === "remove") {
     if (arg2) {
       let index = Pog.throwernames.indexOf(arg2.toLowerCase());
       if (index !== -1) {
@@ -112,12 +129,27 @@ register("command", (arg1, arg2, ...args) => {
         Pog.throwers.splice(index, 1);
         Pog.reasons.splice(index, 1); 
         Pog.save();
-        ChatLib.chat(`${Settings.PREFIX} &eRemoved &7` + arg2 + `&e from your thrower list!`);
+        ChatLib.chat(`${Settings.PREFIX} &eRemoved &7${arg2}&e from your thrower list!`);
       } else {
         ChatLib.chat(`${Settings.PREFIX} &cThis person isn't on your thrower list!`);
       }
     } else {
       ChatLib.chat(`${Settings.PREFIX} &cPlease state who you want to remove from your thrower list!`);
     }
+  } else if (arg1.toLowerCase() === "check") { 
+    if (!arg2) {
+      ChatLib.chat(`${Settings.PREFIX} &cPlease provide a username to check.`);
+      return;
+    }
+
+    let index = Pog.throwernames.indexOf(arg2.toLowerCase());
+    if (index !== -1) {
+        let reason = Pog.reasons[index] || "No reason specified";
+        ChatLib.chat(`${Settings.PREFIX} &7${arg2} &eis on your thrower list! Reason: &7${reason}`);
+    } else {
+        ChatLib.chat(`${Settings.PREFIX} &7${arg2} &eis not on your thrower list!`);
+    }
+  } else {
+    ChatLib.chat("&cUnknown command! Use &b/pfp help &cfor a list of commands.");
   }
 }).setName("pfp");
