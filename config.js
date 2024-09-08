@@ -1,4 +1,4 @@
-import { @Vigilant, @CheckboxProperty, @TextProperty } from 'Vigilance';
+import { @Vigilant, @SwitchProperty, @CheckboxProperty, @TextProperty, @NumberProperty, @ButtonProperty } from 'Vigilance';
 
 @Vigilant("PartyFinderPremium", "§3§lPartyFinderPremium", {
   getCategoryComparator: () => (a, b) => {
@@ -10,17 +10,50 @@ class Settings {
 
   @TextProperty({
     name: "Prefix",
-    description: "The prefix the mod will use. Default: &3PartyFinderPremium &r>&3",
+    description: "The prefix the mod will use for clientside messages. Default: &3PartyFinderPremium &r>&3",
     category: "General",
     placeholder: ""
   })
-  PREFIX = "&3&lPartyFinderPremium &r>&3";
+  PREFIX = "&3PartyFinderPremium &r>&3";
+
+  @TextProperty({
+    name: "Thrower Message",
+    description: "Customize the party message for when a thrower from your list joins! (The reason is given at the end of the message.)\n§3{user} = Player Name",
+    category: "General",
+    placeholder: ""
+  })
+  THROWERMSG = "{user} is on my thrower list!";
+
+  @TextProperty({
+    name: "Class kick Message",
+    description: "Customize the party message for the classes that you are not allowing!\n§3{user} = Player Name | {class} = Class Name",
+    category: "General",
+    placeholder: ""
+  })
+  CLASSKICKMSG = "{user} no {class}!";
+
+  @ButtonProperty({
+    name: "Discord",
+    description: `Join my Discord Server if you have any questions, feedback, ideas or bug reports! &3Give yourself the Skyblock role to enter the correct channel.`,
+    category: "General",
+    placeholder: "Join"
+})
+MyDiscord() {
+    java.awt.Desktop.getDesktop().browse(new java.net.URI(`https://discord.com/invite/AtJ2xgzjQY`));
+}
+  
+  @CheckboxProperty({
+    name: "Dungeon Sweat?",
+    description: "§7§kiiiiiiii",
+    category: "General",
+  })
+  bottomline = false;
 
   @CheckboxProperty({
     name: "Automatically Kick Throwers",
     description: "Automatically kick players that are on your throwers list.",
     category: "General",
-    subcategory: '/pfp add <username> <reason> | /pfp remove <username> | /pfp list'
+    subcategory: '/pfp add <username> [reason] | /pfp remove <username> | /pfp list | /pfp check <username>'
   })
   throwerkick = true;
 
@@ -29,7 +62,7 @@ class Settings {
     description: "When enabled, it will send the kick reason in party chat.\n(also useful if you are not the Leader)",
     category: "Autokick"
   })
-  kickReason = false;
+  kickReason = true;
 
   @CheckboxProperty({
     name: "Archer Allowed",
