@@ -3,5 +3,5 @@
     "author": "schuhweissnicht",
     "description": "A user-friendly module designed to simplify and enhance dungeon party management in Hypixel Skyblock.",
     "entry": "index.js",
-    "version": "1.0.0"
+    "version": "1.2.0"
 }
