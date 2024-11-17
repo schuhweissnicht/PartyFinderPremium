@@ -13,10 +13,17 @@ const Pog = new PogObject('PartyFinderPremium', {
   reasons: [],
 });
 
+
+ChatLib.chat("&9&m--------------------------------------------------");
+ChatLib.chat("&3PartyFinderPremium &aLoaded!");
+ChatLib.chat("&7Use &3/pfp help &7- Shows all available commands");
+ChatLib.chat("&7Use &3/pfp sync &7- Keep usernames up-to-date regularly.");
+ChatLib.chat("&9&m--------------------------------------------------");
+
 register('tick', () => {
   if (!Settings.bottomline) return;
 
-  Scoreboard.setLine(1, `§3Ugy Dungeon Rat!`, true)
+  Scoreboard.setLine(1, `§3Ugly Dungeon Rat!`, true)
 })
 
 register("chat", (event) => {
@@ -72,6 +79,12 @@ register("chat", (event) => {
     ChatLib.chat(`${Settings.PREFIX} &cThere was an error retrieving user data: ${error.message}`);
   });
 }).setCriteria("&r&ejoined the dungeon group! ").setContains();
+
+let syncActive = false;
+let syncIndex = 0;
+let syncCooldown = 0;
+let updatedCount = 0;
+let isProcessing = false;
 
 register("command", (arg1, arg2, ...args) => {
   if (!arg1) {
@@ -149,7 +162,163 @@ register("command", (arg1, arg2, ...args) => {
     } else {
         ChatLib.chat(`${Settings.PREFIX} &7${arg2} &eis not on your thrower list!`);
     }
-  } else {
-    ChatLib.chat("&cUnknown command! Use &b/pfp help &cfor a list of commands.");
-  }
+  } else if (arg1 && arg1.toLowerCase() === "sync") {
+    let throwers = Pog.throwers;
+    let throwerNames = Pog.throwernames;
+
+    if (throwers.length === 0) {
+        ChatLib.chat(`${Settings.PREFIX} &cNo throwers to synchronize.`);
+        return;
+    }
+
+    let estimatedTime = throwers.length;
+    let timeMessage = estimatedTime > 60
+        ? `${Math.floor(estimatedTime / 60)}m ${estimatedTime % 60}s`
+        : `${estimatedTime}s`;
+
+    ChatLib.chat(`${Settings.PREFIX} &aStarting synchronization of ${throwers.length} entries...`);
+    ChatLib.chat(`${Settings.PREFIX} &aEstimated time: &e${timeMessage}`);
+
+    syncActive = true;
+    syncIndex = 0;
+    syncCooldown = 0;
+    updatedCount = 0;
+    isProcessing = false;
+} else {
+  ChatLib.chat("&cUnknown command! Use &b/pfp help &cfor a list of commands.");
+}
 }).setName("pfp");
+
+register("tick", () => {
+if (!syncActive || isProcessing) return;
+
+let throwers = Pog.throwers;
+let throwerNames = Pog.throwernames;
+
+if (syncCooldown > 0) {
+    syncCooldown--;
+    return;
+}
+
+if (syncIndex >= throwers.length) {
+    ChatLib.chat(`${Settings.PREFIX} &aSynchronization complete!`);
+    ChatLib.chat(`${Settings.PREFIX} &a${updatedCount} names were updated.`);
+    syncActive = false;
+    Pog.save();
+    return;
+}
+
+let uuid = throwers[syncIndex];
+let storedName = throwerNames[syncIndex];
+
+isProcessing = true;
+
+request(`https://sessionserver.mojang.com/session/minecraft/profile/${uuid}`)
+    .then((response) => {
+        try {
+            let jsonResponse = JSON.parse(response);
+            let currentName = jsonResponse.name.toLowerCase();
+
+            if (currentName !== storedName) {
+                throwerNames[syncIndex] = currentName;
+                updatedCount++;
+            }
+        } catch (error) {
+        }
+    })
+    .catch((error) => {
+    })
+    .then(() => {
+        syncIndex++;
+        syncCooldown = 20;
+        isProcessing = false;
+    });
+});                                         
+
+register("tick", () => {
+  if (!Settings.editpf) return;
+  if (Player.getOpenedInventory()?.getName() === "Party Finder") {
+      let inventory = Player.getOpenedInventory();
+
+      for (let i = 0; i < inventory.getSize(); i++) {
+          let item = inventory.getStackInSlot(i);
+
+          if (item && item.getID() === 397) {
+              let lore = item.getLore();
+              if (!lore) continue;
+
+              if (!lore.some(line => line.includes("Dungeon:")) || !lore.some(line => line.includes("Members:"))) {
+                  continue;
+              }
+
+              lore = lore.filter(line => !line.includes("'s Party"));
+
+              if (lore.some(line => line.includes("§4⚠ THROWER IN PARTY ⚠"))) {
+                  continue;
+              }
+
+              let members = [];
+              let memberSection = false;
+
+              for (let line of lore) {
+                  if (line.includes("Members:")) {
+                      memberSection = true;
+                      continue;
+                  }
+                  if (memberSection) {
+                      if (line.trim() === "" || line.startsWith("§8")) {
+                          break;
+                      }
+                      if (line.includes(":")) {
+                          let memberName = line.split(":")[0].trim();
+                          memberName = ChatLib.removeFormatting(memberName).trim().toLowerCase();
+                          members.push(memberName);
+                      }
+                  }
+              }
+
+              let throwerNames = [];
+              let updatedLore = false;
+
+              lore = lore.map(line => {
+                  if (line.includes(":")) {
+                      let parts = line.split(":");
+                      let memberName = parts[0].trim();
+                      let cleanName = ChatLib.removeFormatting(memberName).trim().toLowerCase();
+
+                      if (Pog.throwernames.includes(cleanName)) {
+                          throwerNames.push(cleanName);
+                          let memberClass = parts[1].trim();
+                          updatedLore = true;
+                          return `§4§l${ChatLib.removeFormatting(memberName)}§r: ${memberClass}`;
+                      }
+                  }
+                  return line;
+              });
+
+              if (throwerNames.length > 0) {
+                  let throwerLine = `§7Thrower: §c${throwerNames.join(", ")}`;
+                  let noteIndex = lore.findIndex(line => line.includes("Note:"));
+                  if (noteIndex !== -1 && !lore.some(line => line.includes("Thrower:"))) {
+                      lore.splice(noteIndex + 1, 0, throwerLine);
+                      updatedLore = true;
+                  }
+              }
+
+              if (throwerNames.length > 0 && !lore.some(line => line.includes("⚠ THROWER IN PARTY ⚠"))) {
+                let maxLength = Math.max(...lore.map(line => ChatLib.removeFormatting(line).length));
+                let warning = "⚠ THROWER IN PARTY ⚠";
+                let padding = Math.max(0, Math.floor((maxLength - warning.length) / 2));
+                let centeredWarning = " ".repeat(padding) + `§4${warning}`;
+            
+                lore.push(centeredWarning);
+                updatedLore = true;
+            	}
+
+              if (updatedLore) {
+                  item.setLore(lore);
+              }
+          }
+      }
+  }
+});
