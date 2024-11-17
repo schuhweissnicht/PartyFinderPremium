@@ -42,14 +42,21 @@ MyDiscord() {
     java.awt.Desktop.getDesktop().browse(new java.net.URI(`https://discord.com/invite/AtJ2xgzjQY`));
 }
   
-  @CheckboxProperty({
+  @SwitchProperty({
     name: "Dungeon Sweat?",
     description: "§7§kiiiiiiii",
     category: "General",
   })
   bottomline = false;
 
-  @CheckboxProperty({
+  @SwitchProperty({
+    name: "Edit Party Finders",
+    description: "Edit the Tooltip of Partys with Thrower/s inside of the Party Finder GUI.",
+    category: "General",
+  })
+  editpf = true;
+
+  @SwitchProperty({
     name: "Automatically Kick Throwers",
     description: "Automatically kick players that are on your throwers list.",
     category: "General",
@@ -57,42 +64,42 @@ MyDiscord() {
   })
   throwerkick = true;
 
-  @CheckboxProperty({
+  @SwitchProperty({
     name: "Send Kick Reason in Party Chat",
     description: "When enabled, it will send the kick reason in party chat.\n(also useful if you are not the Leader)",
     category: "Autokick"
   })
   kickReason = true;
 
-  @CheckboxProperty({
+  @SwitchProperty({
     name: "Archer Allowed",
     category: "Autokick",
     subcategory: 'Allow Classes'
   })
   archerAllowed = true;
 
-  @CheckboxProperty({
+  @SwitchProperty({
     name: "Berserker Allowed",
     category: "Autokick",
     subcategory: 'Allow Classes'
   })
   berserkAllowed = true;
 
-  @CheckboxProperty({
+  @SwitchProperty({
     name: "Mage Allowed",
     category: "Autokick",
     subcategory: 'Allow Classes'
   })
   mageAllowed = true;
 
-  @CheckboxProperty({
+  @SwitchProperty({
     name: "Tank Allowed",
     category: "Autokick",
     subcategory: 'Allow Classes'
   })
   tankAllowed = true;
 
-  @CheckboxProperty({
+  @SwitchProperty({
     name: "Healer Allowed",
     category: "Autokick",
     subcategory: 'Allow Classes'
