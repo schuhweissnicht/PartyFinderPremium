@@ -17,6 +17,8 @@
 - ### **Error Handling**: Added error messages for unknown `/pfp` commands.
 - ### **Dungeon Sweat?**: Added a label for "Dungeon Sweat?".
 - ### **Customizable Messages**: Added customizable party messages for when throwers or disallowed classes join.
+- ### **Update your Thrower list:** Added `/pfp sync` to update your Thrower names from there UUIDs in order to work for the Tooltip Editor
+- ### **Party Finder Tooltips:** Added a live Scan to the Party Finder to show your Throwers in others Partys
 
 ----
 
@@ -27,13 +29,16 @@
 - Remove a thrower from your list: /pfp remove <username>
 - List your added throwers: /pfp list
 - Check if someone is on your thrower list: /pfp check <username>
+- Sync the Username from there UUIDs: /pfp sync
 - Display all available commands: /pfp help
 ```
+
+![](https://i.imgur.com/9Pd3owB.png)
 
 ----
 
 ## Upcoming Features:
-- Adding a live scan to the Party Finder to display a warning for parties with throwers in them.
+- No upcoming features currently planned. Have ideas? Share them on my Discord!
 
 ---
 
